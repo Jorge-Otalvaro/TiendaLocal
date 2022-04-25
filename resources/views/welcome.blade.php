@@ -27,29 +27,34 @@
 
             <div class="font-sans text-gray-900 antialiased">
                 <div class="py-12">                  
-                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        
-                        <div class="card-deck mb-4 text-center">
-                            <div class="card mb-4 box-shadow">
-                                <div class="card-header">
-                                    <h4 class="my-0 font-weight-normal">Free</h4>
+                    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">                        
+                        <div class="card-deck mb-3 text-center">
+                            @foreach($products as $product)
+                                <div class="card mb-4 box-shadow">
+                                    <div class="card-header">
+                                        <h4 class="my-0 font-weight-normal">{{ Str::limit($product->name, 30) }}</h4>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <h1 class="card-title pricing-card-title">
+                                            $ {{ number_format($product->price, 0, ",", ".") }}
+                                        </h1>
+                                        <a class="btn btn-lg btn-block btn-outline-primary" href="{{ route('checkout', $product->id) }}">Comprar</a>
+                                    </div>
+                                </div>   
+                            @endforeach                                   
+                        </div>    
+
+                        @if(count($products) <= 0)
+                            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div class="p-6 bg-white border-b border-gray-200">
+                                    No tenemos productos registrados.
+                                    <a class="btn btn-lg btn-block btn-success" href="{{ route('new-products') }}">
+                                        Cargar nuevos registros
+                                    </a>
                                 </div>
-
-                                <div class="card-body">
-                                    <h1 class="card-title pricing-card-title">
-                                        $0
-                                    </h1>
-                                    <button type="button" class="btn btn-lg btn-block btn-outline-primary">Comprar</button>
-                                </div>
-                            </div>       
-                        </div>
-
-                        <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                            <div class="p-6 bg-white border-b border-gray-200">
-                                You're logged in!
-                            </div>
-                        </div>
-
+                            </div>  
+                        @endif
                     </div>
                 </div>                
             </div>  
