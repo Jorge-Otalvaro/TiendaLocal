@@ -31,57 +31,91 @@
                         </div>
 
                         <div class="col-md-8 order-md-1">
-                            <h4 class="mb-3">Formulario de pago</h4>
-                            <form class="needs-validation" novalidate>
+                            <h4 class="mb-3">Finalizar la compra</h4>                           
+
+                            @auth
+                                <p class="mb-3">
+                                    Valida que la información suministrada es correcta.
+                                </p>
+                            @else 
+                                <p class="mb-3">
+                                    Solicitamos únicamente la información esencial para la finalización de la compra.
+                                </p>
+                            @endauth 
+                                
+                            <form class="needs-validation" method="POST" action="{{ route('orders.store') }}" novalidate>
+                                @csrf
+
+                                <x-input id="product"
+                                type="hidden" name="product" 
+                                value="{{ $product->id }}"                                       
+                                />   
+
+                                <!-- Validation Errors -->
+                                <x-auth-validation-errors class="mb-4" :errors="$errors" />
 
                                 <div class="mb-3">
                                     <x-label for="name" :value="__('Nombre/Apellido')" />
 
-                                    <x-input id="name" 
+                                    @auth
+                                        <x-input id="name" 
                                         class="block mt-1 w-full" 
-                                        type="text" name="name"                                          
-                                        @auth
-                                            :value="old('name', Auth::user()->name)"
-                                            disabled
-                                        @endauth                                        
+                                        type="text" name="name"
+                                        :value="old('name', Auth::user()->name)"
+                                        readonly                                  
                                         required autofocus />
+                                    @else 
+                                        <x-input id="name" 
+                                        class="block mt-1 w-full" 
+                                        type="text" name="name" 
+                                        :value="old('name')"                                       
+                                        required autofocus />                                            
+                                    @endauth                                    
                                 </div>
 
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <x-label for="email" :value="__('Correo electrónico')" />
 
-                                        <x-input id="email" 
-                                        class="block mt-1 w-full" 
-                                        type="text" name="email" 
                                         @auth
+                                            <x-input id="email" 
+                                            class="block mt-1 w-full" 
+                                            type="text" name="email"
                                             :value="old('email', Auth::user()->email)"
-                                            disabled
-                                        @endauth   
-                                        required autofocus />
+                                            readonly                                  
+                                            required autofocus />
+                                        @else 
+                                            <x-input id="email" 
+                                            class="block mt-1 w-full" 
+                                            type="text" name="email" 
+                                            :value="old('email')"                                      
+                                            required autofocus />                                            
+                                        @endauth 
                                     </div>
 
                                     <div class="col-md-6 mb-3">
                                         <x-label for="mobile" :value="__('Teléfono')" />
 
-                                        <x-input id="mobile" 
-                                        class="block mt-1 w-full" 
-                                        type="text" name="mobile" 
                                         @auth
+                                            <x-input id="mobile" 
+                                            class="block mt-1 w-full" 
+                                            type="text" name="mobile"
                                             :value="old('mobile', Auth::user()->mobile)"
-                                            disabled
+                                            readonly                                  
+                                            required autofocus />
+                                        @else 
+                                            <x-input id="mobile" 
+                                            class="block mt-1 w-full" 
+                                            type="text" name="mobile" 
+                                            :value="old('mobile')"                                       
+                                            required autofocus />                                            
                                         @endauth 
-                                        required autofocus />
                                     </div>
                                 </div>
 
-                                <hr class="mb-4">
-
-                                <h4 class="mb-3">Payment</h4>
-
-                                <hr class="mb-4">
-
-                                <button class="btn btn-lg btn-block btn-success" type="submit">Continue to checkout</button>
+                                <x-button class="ml-4">
+                                    {{ __('Generar orden de compra') }}
+                                </x-button>
                             </form>
                         </div>
                     </div>

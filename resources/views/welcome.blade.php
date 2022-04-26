@@ -43,7 +43,9 @@
                                     </div>
                                 </div>   
                             @endforeach                                   
-                        </div>    
+                        </div>   
+
+                        {!! $products->links() !!} 
 
                         @if(count($products) <= 0)
                             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -59,5 +61,7 @@
                 </div>                
             </div>  
         </div>      
+
+        @include('sweetalert::alert')
     </body>
 </html>
