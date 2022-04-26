@@ -36,20 +36,32 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
-//
-// Route::get('/orders-list', function () {
-//     return view('orders/orders-lists');
-// })->middleware(['auth'])->name('orders');
+Route::group(
+    [
+        'prefix' => 'orders', 
+        'middleware' => ['auth'],
+    ],
+    function() {
+        Route::get('/', [OrderController::class, 'index'])
+            ->name('orders.index');
 
+        Route::post('/', [OrderController::class, 'store'])
+            ->name('orders.store');    
+
+            Route::get('/{order}', [OrderController::class, 'show'])
+            ->where('order', '[0-9]+')
+            ->name('orders.show');
+
+        Route::get('{order}/pay', [OrderController::class, 'payment'])
+            ->where('order', '[0-9]+')
+            ->name('orders.payment');
+    }
+);
 
 // Auth::routes([
 //     'reset' => false,
 //     'confirm' => false,
 //     'verify' => false,
 // ]);
-
-Route::resource('orders', OrderController::class)->only([
-    'index', 'store', 'show'
-]);
 
 require __DIR__.'/auth.php';

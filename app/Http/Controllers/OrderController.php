@@ -14,12 +14,30 @@ use RealRashid\SweetAlert\Facades\Alert;
 
 class OrderController extends Controller
 {
-    public function __construct()
+    /**
+     * Modelo de orden.
+     *
+     * @var Order
+     */
+    protected $order;
+
+    public function __construct(Order $order)
     {
     	$this->middleware('auth')->only('index');
         $this->middleware('auth')->except('store');
+        $this->middleware('auth')->only('show');
+        $this->middleware('auth')->only('payment');
+
+        $this->order = $order;
     }
 
+
+    /**
+     * Ver todas las ordenes del usuario autenticado 
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
     	$orders = Order::latest()->where('customer_email', Auth::user()->email)->paginate(8);
@@ -29,7 +47,7 @@ class OrderController extends Controller
     }
 
     /**
-     * Store a new Order.
+     * Crear una orden.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -78,6 +96,47 @@ class OrderController extends Controller
 
         toast('Order generated','success');    
 
-        return redirect('/orders');
+        if ($order) {
+            return redirect()->route("orders.show", ['order' => $order->id]);
+        } else {
+            $errors = new \Illuminate\Support\MessageBag();
+            $errors->add('msg_0', "Se genero un error almacenando la orden.");
+            return back()->withInput()->withErrors($errors);
+        }
+    }
+
+    /**
+     * Muestra el detalle de una orden.
+     *
+     * @param  int  $idOrder Id de la orden.
+     * @return \Illuminate\Http\Response
+     */
+    public function show($request)
+    {
+        $order = Order::where('customer_email', Auth::user()->email)->find($request);
+
+        if (!$order) {
+            toast('Order not exists','success');   
+            return redirect()->route("orders.index");
+        }
+
+        return view('orders/checkout', compact('order'));
+    }
+
+    /**
+     * Iniciar un pago.
+     *
+     * @param  Order $order Modelo para pagar.
+     * @return \Illuminate\Http\Response
+     */
+    public function payment(Order $order)
+    {
+
+        if ($order->status != 'CREATED') {
+            return redirect()->route("orders.show", ['order' => $order->id]);
+        }
+
+        
+
     }
 }
