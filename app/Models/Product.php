@@ -13,4 +13,14 @@ class Product extends Model
         'name',
         'price'
     ];
+
+    /**
+    * Accesor para el el precio formateado.
+    *
+    * @return string Nombre.
+    */
+    public function getTotalFormatAttribute()
+    {
+        return '$'.number_format($this->price, 2, ',', '.');
+    }
 }

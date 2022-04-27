@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\TransactionController;
+
+use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProductController;
-use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,16 +23,16 @@ use App\Http\Controllers\OrderController;
 Route::get('/', [ProductController::class, 'index']);
 
 // Generar nuevos productos 
-Route::get('/news-products', function () {
-	Artisan::call('db:seed --class=ProductSeeder');
-	Alert::success('Products updated', 'Products updated successfully');
-	return redirect('/')->with('success', 'Products updated successfully');
-})->name('new-products');
+Route::get('/news-products', 
+    [ProductController::class, 'loadProducts']
+)->name('new-products');
 
 // 
 Route::get('/checkout/{id}', 
 	[ProductController::class, 'formCheckout']
 )->name('checkout');
+
+Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');   
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -43,10 +45,7 @@ Route::group(
     ],
     function() {
         Route::get('/', [OrderController::class, 'index'])
-            ->name('orders.index');
-
-        Route::post('/', [OrderController::class, 'store'])
-            ->name('orders.store');    
+            ->name('orders.index');        
 
             Route::get('/{order}', [OrderController::class, 'show'])
             ->where('order', '[0-9]+')
@@ -58,10 +57,23 @@ Route::group(
     }
 );
 
-// Auth::routes([
-//     'reset' => false,
-//     'confirm' => false,
-//     'verify' => false,
-// ]);
+Route::group(
+    [
+        'prefix' => 'transactions', 
+        'middleware' => ['auth'],
+    ],
+    function() {
+        Route::get('/receive/{gateway}/{uuid}',
+            [TransactionController::class, 'receive'])
+            ->where('uuid', '[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}')
+            ->name('transactions.receive');        
+    }
+);
+
+Route::get('/notification/unread/{id}', function ($id) {
+    $notification = auth()->user()->notifications()->find($id);
+    $notification->markAsRead();
+    return redirect($notification->data['url']);
+})->name('notification.unread');
 
 require __DIR__.'/auth.php';

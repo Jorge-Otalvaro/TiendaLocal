@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('customer_email', 120);
             $table->string('customer_mobile', 40);
             $table->enum('status', ['CREATED', 'PAYED', 'REJECTED']);
-
+            $table->decimal('total', 20, 2);
             $table->unsignedBigInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products');
             

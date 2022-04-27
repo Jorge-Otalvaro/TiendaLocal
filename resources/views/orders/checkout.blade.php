@@ -47,8 +47,7 @@
                                     </span>
                                 @endif  
                             </h4>
-                            <form class="needs-validation" method="POST" action="{{ route('orders.payment', ["order" => $order->id]) }}" novalidate>
-                                @csrf
+                            <form class="needs-validation" novalidate>
 
                                 <hr class="mb-4">
 
@@ -67,10 +66,11 @@
                                         </div>              
                                     </div>
 
-                                    <hr class="mb-4">                                
-                                    <button class="btn btn-lg btn-block btn-success" type="submit">
+                                    <hr class="mb-4">  
+
+                                    <a href="{{ route('orders.payment', ["order" => $order->id]) }}" class="btn btn-lg btn-block btn-success" >
                                         Pagar orden de compra
-                                    </button>
+                                    </a>
                                 @endif                                
                             </form>
                         </div>

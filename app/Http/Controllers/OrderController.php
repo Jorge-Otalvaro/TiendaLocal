@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
-
+use App\Http\Requests\StoreOrderRequest;
+use App\Observers\PaymentObserver;
 
 class OrderController extends Controller
 {
@@ -23,8 +24,8 @@ class OrderController extends Controller
 
     public function __construct(Order $order)
     {
-    	$this->middleware('auth')->only('index');
         $this->middleware('auth')->except('store');
+    	$this->middleware('auth')->only('index');
         $this->middleware('auth')->only('show');
         $this->middleware('auth')->only('payment');
 
@@ -33,7 +34,7 @@ class OrderController extends Controller
 
 
     /**
-     * Ver todas las ordenes del usuario autenticado 
+     * Ver todas las ordenes del usuario autenticado
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -49,23 +50,18 @@ class OrderController extends Controller
     /**
      * Crear una orden.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\StoreOrderRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreOrderRequest $request)
     {
-    	$request->validate([
-    		'name' => ['required', 'string', 'max:80'],
-    		'mobile' => ['required', 'numeric', 'min:10'],
-	        'email' => ['required', 'string', 'email', 'max:120'],
-            'product' => ['required', 'exists:App\Models\Product,id']
-        ]);    	
+        $request->validated();
 
         $userAutenticate = Auth::check();
 
         if (!$userAutenticate) {
 
-        	$request->validate([	            
+        	$request->validate([
 	            'mobile' => ['unique:users'],
 	            'email' => ['unique:users']
 	        ]);
@@ -79,10 +75,8 @@ class OrderController extends Controller
 	            'password' => Hash::make($passwordNew),
 	        ]);
 
-	        // toast('Hola,'. $user->name .' Tu usuario ha sido Creado, y las credenciales fueron enviadas al correo','success');   
-
 	        Auth::login($user);
-		}   	
+		}
 
         $productId = Product::find($request->product);
 
@@ -92,9 +86,9 @@ class OrderController extends Controller
             'customer_email' => $request->email,
             'status' => 'CREATED',
             'product_id' => $productId->id,
-        ]);    
+        ]);
 
-        toast('Order generated','success');    
+        toast('Order generated','success');
 
         if ($order) {
             return redirect()->route("orders.show", ['order' => $order->id]);
@@ -116,7 +110,7 @@ class OrderController extends Controller
         $order = Order::where('customer_email', Auth::user()->email)->find($request);
 
         if (!$order) {
-            toast('Order not exists','success');   
+            toast('Order not exists','success');
             return redirect()->route("orders.index");
         }
 
@@ -131,12 +125,38 @@ class OrderController extends Controller
      */
     public function payment(Order $order)
     {
-
         if ($order->status != 'CREATED') {
             return redirect()->route("orders.show", ['order' => $order->id]);
         }
-
         
+        $transaction = $order->getLastTransaction();
+        
+        if (! $transaction || ($transaction->current_status != "PENDING" && $transaction->current_status != "CREATED")) {
+            $response = PaymentObserver::pay('place_to_pay', $order);
+            if (! $response) {
+                return redirect()
+                    ->route("orders.show", ['order' => $order->id])
+                    ->withInput()
+                    ->withErrors(new \Illuminate\Support\MessageBag([
+                        'msg_0' => 'El metodo de pago no esta soportado.'
+                    ]));
+            }
 
+            if (! $response->success) {
+                return redirect()
+                    ->route("orders.show", ['order' => $order->id])
+                    ->withInput()
+                    ->withErrors(new \Illuminate\Support\MessageBag([
+                        'msg_0' => 'Se genero un error al crear la transacion.',
+                        'msg_1' => $response->exception->getMessage()
+                    ]));
+            }
+            return redirect($response->url);
+        } else {
+            if ($transaction->current_status != "CREATED") {
+                return redirect()->route("orders.show", ['order' => $order->id]);
+            }
+            return redirect($transaction->url ?? "");
+        }
     }
 }
