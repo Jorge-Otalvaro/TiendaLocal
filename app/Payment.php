@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Observers;
+namespace App;
 
-use App\Models\Order;
-use App\Models\Transaction;
 use App\Strategies\Pay\Context;
 use App\Strategies\Pay\PlaceToPay;
 use App\Strategies\Pay\Test;
+use App\Models\Order;
+use App\Models\Transaction;
 
-
-class PaymentObserver
+class Payment
 {
+
     /**
      * @var array $paymentMethodsEnable Metodos de pagos habilitados.
      */
@@ -18,7 +18,7 @@ class PaymentObserver
         "place_to_pay" => PlaceToPay::class,
         "test" => Test::class,
     ];
-
+    
     private function createStrategy(string $typePay)
     {
         try {
@@ -26,7 +26,14 @@ class PaymentObserver
                 if ($typePay == "place_to_pay") {
                     return Context::create(
                         new self::$paymentMethodsEnable[$typePay](
-                            resolve('Dnetix\Redirection\PlacetoPay'),
+
+                            new \Dnetix\Redirection\PlacetoPay([
+                                'login' => env('PLACE_TO_PAY_LOGIN'), // Provided by PlacetoPay
+                                'tranKey' => env('PLACE_TO_TRAN_KEY'), // Provided by PlacetoPay
+                                'baseUrl' => env('PLACE_TO_TRAN_URL'),
+                                'timeout' => 10 // (optional) 15 by default
+                            ]),
+
                             new Transaction()
                         )
                     );
@@ -39,13 +46,14 @@ class PaymentObserver
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
         }
+
         return false;
     }
-
+    
     public function pay(string $typePay, Order $order)
-    {
-        if ($data = $this->createStrategy($typePay)) {
-            return $data->pay($order);
+    {       
+        if ($staregy = $this->createStrategy($typePay)) {
+            return $staregy->pay($order);
         }
 
         return false;
@@ -53,11 +61,10 @@ class PaymentObserver
 
     public function getInfoPay(Transaction $transaction)
     {
-        if ($data = $this->createStrategy($transaction->gateway)) {
-            return $data->getInfoPay($transaction);
+        if ($staregy = $this->createStrategy($transaction->gateway)) {
+            return $staregy->getInfoPay($transaction);
         }
 
         return false;
     }
-    
 }

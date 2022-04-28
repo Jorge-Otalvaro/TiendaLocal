@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('transaction_id');
 
-            $table->enum('status', ['PAYED', 'REJECTED', 'PENDING', 'EXPIRED']);
+            $table->enum('status', ['CREATED', 'PAYED', 'REJECTED', 'PENDING', 'EXPIRED', 'APPROVED', 'REFUNDED']);
 
             $table->mediumText('data');
             

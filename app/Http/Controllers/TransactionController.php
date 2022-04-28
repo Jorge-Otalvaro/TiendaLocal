@@ -10,7 +10,7 @@ use App\Models\TransactionStatu;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use Illuminate\Http\Request;
-use App\Observers\PaymentObserver;
+use Facades\App\Payment;
 
 class TransactionController extends Controller
 {
@@ -67,7 +67,7 @@ class TransactionController extends Controller
      */
     public static function updateStatus(Transaction $transaction)
     {
-        $response = PaymentObserver::getInfoPay($transaction);
+        $response = Payment::getInfoPay($transaction);
 
         if (! $response) {
             return [

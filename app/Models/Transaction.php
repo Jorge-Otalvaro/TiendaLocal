@@ -10,7 +10,8 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'order_id',        
+        'order_id',  
+        'uuid',      
         'status',
         'reference',
         'url',
@@ -109,9 +110,10 @@ class Transaction extends Model
      */
     public function updateOrder($data)
     {
-        try {
+        try {           
             return $this->order->fill($data)->save();
-        } catch (\Illuminate\Database\QueryException $exception) {
+
+        } catch (\Illuminate\Database\QueryException $exception) {            
             return false;
         }
     }

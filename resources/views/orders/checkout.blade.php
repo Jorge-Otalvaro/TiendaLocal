@@ -28,6 +28,17 @@
                                     <strong>{{ $order->product->total_format }}</strong>
                                 </li>
                             </ul>
+
+                            @if(count( $errors ) > 0)
+                                <div class="alert alert-danger alert-dismissible">
+                                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true"></button>
+                                    @foreach ($errors->all() as $error)
+                                        <div style="margin-bottom: 1em;">
+                                            <i class="fa fa-fw fa-exclamation-circle"></i> {{ $error }}
+                                        </div>
+                                    @endforeach
+                                </div>                                                                    
+                            @endif
                         </div>
 
                         <div class="col-md-8 order-md-1">
@@ -48,6 +59,27 @@
                                 @endif  
                             </h4>
                             <form class="needs-validation" novalidate>
+
+                                @switch($order->status)
+                                    @case("CREATED")
+                                        @if ($order->transactions->count() == 0 || $order->transactions->first()->current_status != "PENDING")
+                                            
+                                        @else
+                                            <div class="alert alert-warning float-right">
+                                                <h5><i class="icon fas fa-exclamation-triangle"></i> Esta orden tiene una transaccion pendientes, hasta que no se resuelva este no se puede realizar otro intento de pago.</h5>
+                                            </div>                                            
+                                        @endif                                        
+                                        @break
+                                    @case("PAYED")
+                                        <div class="alert alert-success float-right">
+                                            <h5><i class="icon fas fa-thumbs-up"></i> Esta orden ya se encuentra pagada.</h5>
+                                        </div>
+                                        @break
+                                    @default
+                                        <div class="alert alert-danger float-right">
+                                            <h5><i class="icon fas fa-ban"></i> Esta orden ya no puede ser pagada.</h5>
+                                        </div>
+                                @endswitch
 
                                 <hr class="mb-4">
 

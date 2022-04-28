@@ -40,7 +40,7 @@ class PlaceToPay implements Strategy
     {
         $this->placeToPay = $placeToPay;
         $this->transaction = $transaction;
-        $this->mapStatus();
+        // $this->mapStatus();
     }
 
     /**
@@ -49,37 +49,45 @@ class PlaceToPay implements Strategy
      * @return void
      */
     private function mapStatus()
-    {
+    {   
         $statusMap = &$this->statusMap;
+
         $statusOrderMap = &$this->statusOrderMap;
+
         array_map(function ($state) use (&$statusMap, &$statusOrderMap) {
+
             switch ($state) {
                 case 'APPROVED':
                     $statusMap[$state] = "PAYED";
                     $statusOrderMap[$state] = "PAYED";
                     break;
+
                 case 'ERROR':
                 case 'FAILED':
+
                 case 'REJECTED':
                     $statusMap[$state] = "REJECTED";
                     $statusOrderMap[$state] = "CREATED";
                     break;
+
                 case 'REFUNDED':
                     $statusMap[$state] = "REFUNDED";
                     $statusOrderMap[$state] = "CREATED";
                     break;
+
                 case 'PENDING_VALIDATION':
+
                 case 'PENDING':
                     $statusMap[$state] = "PENDING";
                     $statusOrderMap[$state] = "CREATED";
                     break;
+
                 default:
                     $statusMap[$state] = "CREATED";
                     $statusOrderMap[$state] = "CREATED";
                     break;
             }
-
-        }, Status::validStatus());
+        },Status::validStatus());
     }
 
     /**
@@ -123,11 +131,11 @@ class PlaceToPay implements Strategy
      * @return Exception|RedirectResponse Con una excepción si ocurre o conel la respuesta de la crecion de la transaccion.
      */
     public function createPay(Order $order)
-    {
+    {      
         $uuid = $this->getUuid();
-        $reference = $this->getReference($order->id);
-        $request = $this->getRequestData($order, $reference, $uuid);
-        $response = $this->placeToPay->request($request);
+        $reference = $this->getReference($order->id);        
+        $request = $this->getRequestData($order, $reference, $uuid); 
+        $response = $this->placeToPay->request($request);       
 
         if (! $response->isSuccessful()) {
             throw new \Exception("Se genero un error al crear la transaccion en placetopay (".$response->status()->message().").");
@@ -136,20 +144,21 @@ class PlaceToPay implements Strategy
         $transaction = $this->transaction->store([
             'order_id' => $order->id,
             'uuid' => $uuid,
-            'current_status' => 'CREATED',
+            'status' => 'CREATED',
             'reference' => $reference,
             'url' => $response->processUrl(),
             'requestId' => $response->requestId(),
             'gateway' => 'place_to_pay',
         ]);
 
-        if (! $transaction) {
+        if (!$transaction) {
             throw new \Exception('Se genero un error al almacenar la transaccion.');
         }
                                         
         if (! $transaction->attachStates(
             [
                 [
+                    'transaction_id' => $transaction->id,
                     'status' => 'CREATED',
                     'data' => json_encode($response->toArray()),
                 ]
@@ -171,16 +180,18 @@ class PlaceToPay implements Strategy
     {
         try {
             $response = $this->placeToPay->query($transaction->requestId);
-            $status = $this->getStatus($response);
+            // $status = $this->getStatus($response);
+            $status = $response->status()->status();
             
             if (!$status) {
                 throw new \Exception('El estado recibido no se identifica.');
             }
 
-            if ($transaction->getAttributeValue('current_status') != $status) {
+            if ($transaction->getAttributeValue('status') != $status) {
+
                 if (! $transaction->edit(
                     [
-                        'current_status' => $status,
+                        'status' => $status,
                     ]
                 )) {
                     throw new \Exception('Se genero un error al actualizar la transaccion.');
@@ -196,10 +207,11 @@ class PlaceToPay implements Strategy
                 )) {
                     throw new \Exception('Se genero un error al almacenar el estado de la transaccion.');
                 }
-
+                
                 if (! $transaction->updateOrder(
                     [
-                        'status' => $this->getOrderStatus($response),
+                        'status' => $status,
+                        // 'status' => $this->getOrderStatus($response),
                     ]
                 )) {
                     throw new \Exception('Se genero un error al actualizar el estado de la orden.');
@@ -209,7 +221,7 @@ class PlaceToPay implements Strategy
             return (Object) [
                 "success" => true,
                 "data" => [
-                    "status" => $this->getStatus($response),
+                    "status" => $response->status()->status(),
                     "message" => $response->status()->message(),
                 ]
             ];
@@ -240,7 +252,7 @@ class PlaceToPay implements Strategy
         if (!isset($this->statusMap[$response->status()->status()])) {
             return false;
         }
-        
+
         return $this->statusMap[$response->status()->status()];
     }
     
@@ -269,17 +281,17 @@ class PlaceToPay implements Strategy
      */
     private function getRequestData(Order $order, $reference, $uuid): array
     {
-        $urlRecive = route("transactions.receive", ["gateway" => "place_to_pay",'uuid' => $uuid]);
+        $urlRecive = route("transactions.receive", ["gateway" => "place_to_pay",'uuid' => $uuid]);     
 
         return [
             "locale" => "es_CO",
             "buyer" => $this->getBuyer(),
             "payment" => [
                 "reference" => $reference,
-                "description" => "Compra de (".$order->name.") ",
+                "description" => "Compra de (".$order->product->name.") ",
                 "amount" => [
                     "currency" => "COP",
-                    "total" => $order->price,
+                    "total" => $order->total,
                     "taxes" => [
                         [
                             "kind" => "iva",
@@ -289,8 +301,8 @@ class PlaceToPay implements Strategy
                 ],
                 "items" => [
                     [
-                        "name" => $order->name,
-                        "price" => $order->price
+                        "name" => $order->product->name,
+                        "price" => $order->total
                     ]
                 ],
                 "allowPartial" => false,

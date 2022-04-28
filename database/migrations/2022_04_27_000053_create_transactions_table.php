@@ -20,7 +20,7 @@ return new class extends Migration
 
             $table->unsignedBigInteger('order_id');
 
-            $table->enum('status', ['CREATED', 'PAYED', 'REJECTED', 'PENDING', 'EXPIRED']);
+            $table->enum('status', ['CREATED', 'PAYED', 'REJECTED', 'PENDING', 'EXPIRED', 'APPROVED', 'REFUNDED']);
 
             $table->string('reference')->nullable();
             $table->string('url')->nullable();

@@ -11,7 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use RealRashid\SweetAlert\Facades\Alert;
 use App\Http\Requests\StoreOrderRequest;
-use App\Observers\PaymentObserver;
+use Facades\App\Payment;
 
 class OrderController extends Controller
 {
@@ -134,12 +134,13 @@ class OrderController extends Controller
         
         if (!$transaction || ($transaction->current_status != "PENDING" && $transaction->current_status != "CREATED")) {
 
-            $response = PaymentObserver::pay('place_to_pay', $order);
-            
+            $response = Payment::pay('place_to_pay', $order);
+
             if (! $response) {
 
-                return redirect()
-                    ->route("orders.show", ['order' => $order->id])
+                toast('El metodo de pago no esta soportado.','warning');
+
+                return redirect()->route("orders.show", ['order' => $order->id])
                     ->withInput()
                     ->withErrors(new \Illuminate\Support\MessageBag([
                         'msg_0' => 'El metodo de pago no esta soportado.'
@@ -147,6 +148,8 @@ class OrderController extends Controller
             }
 
             if (! $response->success) {
+                toast('Se genero un error al crear la transacion.','error');
+
                 return redirect()
                     ->route("orders.show", ['order' => $order->id])
                     ->withInput()
@@ -155,8 +158,10 @@ class OrderController extends Controller
                         'msg_1' => $response->exception->getMessage()
                     ]));
             }
+
             return redirect($response->url);
-        } else {
+
+        } else {            
 
             if ($transaction->current_status != "CREATED") {
                 return redirect()->route("orders.show", ['order' => $order->id]);
