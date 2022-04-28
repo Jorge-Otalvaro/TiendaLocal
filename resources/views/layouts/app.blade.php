@@ -13,6 +13,12 @@
         <!-- Styles -->
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 
+        <!-- Bootstrap core CSS -->
+        <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+
+        <!-- Custom styles for this template -->
+        <link href="{{ asset('css/form-validation.css') }}" rel="stylesheet">
+        
         <!-- Scripts -->
         <script src="{{ asset('js/app.js') }}" defer></script>
     </head>
@@ -32,5 +38,7 @@
                 {{ $slot }}
             </main>
         </div>
+
+        @include('sweetalert::alert')
     </body>
 </html>
