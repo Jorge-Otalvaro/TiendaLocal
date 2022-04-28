@@ -36,12 +36,13 @@ Route::post('/orders', [OrderController::class, 'store'])->name('orders.store');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::group(
     [
         'prefix' => 'orders', 
         'middleware' => ['auth'],
+        'middleware' => ['verified'],
     ],
     function() {
         Route::get('/', [OrderController::class, 'index'])
@@ -61,6 +62,7 @@ Route::group(
     [
         'prefix' => 'transactions', 
         'middleware' => ['auth'],
+        'middleware' => ['verified'],
     ],
     function() {
         Route::get('/receive/{gateway}/{uuid}',
