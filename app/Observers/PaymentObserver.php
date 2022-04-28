@@ -42,7 +42,7 @@ class PaymentObserver
         return false;
     }
 
-    public static function pay(string $typePay, Order $order)
+    public function pay(string $typePay, Order $order)
     {
         if ($data = $this->createStrategy($typePay)) {
             return $data->pay($order);

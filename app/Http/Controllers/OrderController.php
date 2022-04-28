@@ -85,6 +85,7 @@ class OrderController extends Controller
             'customer_mobile' => $request->mobile,
             'customer_email' => $request->email,
             'status' => 'CREATED',
+            'total' => $productId->price,
             'product_id' => $productId->id,
         ]);
 
@@ -131,9 +132,12 @@ class OrderController extends Controller
         
         $transaction = $order->getLastTransaction();
         
-        if (! $transaction || ($transaction->current_status != "PENDING" && $transaction->current_status != "CREATED")) {
+        if (!$transaction || ($transaction->current_status != "PENDING" && $transaction->current_status != "CREATED")) {
+
             $response = PaymentObserver::pay('place_to_pay', $order);
+            
             if (! $response) {
+
                 return redirect()
                     ->route("orders.show", ['order' => $order->id])
                     ->withInput()
@@ -153,9 +157,11 @@ class OrderController extends Controller
             }
             return redirect($response->url);
         } else {
+
             if ($transaction->current_status != "CREATED") {
                 return redirect()->route("orders.show", ['order' => $order->id]);
             }
+
             return redirect($transaction->url ?? "");
         }
     }

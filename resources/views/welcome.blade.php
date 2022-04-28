@@ -37,7 +37,7 @@
 
                                     <div class="card-body">
                                         <h1 class="card-title pricing-card-title">
-                                            $ {{ number_format($product->price, 0, ",", ".") }}
+                                            {{ $product->total_format }}
                                         </h1>
                                         <a class="btn btn-lg btn-block btn-outline-primary" href="{{ route('checkout', $product->id) }}">Comprar</a>
                                     </div>

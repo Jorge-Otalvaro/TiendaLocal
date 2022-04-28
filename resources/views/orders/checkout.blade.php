@@ -20,12 +20,12 @@
                                     <div>
                                         <h6 class="my-0">{{ $order->product->name }}</h6>
                                      </div>
-                                    <span class="text-muted">$ {{ number_format($order->product->price, 0, ",", ".") }}</span>
+                                    <span class="text-muted">{{ $order->product->total_format }}</span>
                                 </li>
 
                                 <li class="list-group-item d-flex justify-content-between">
                                     <span>Total (COP)</span>
-                                    <strong>$ {{ number_format($order->product->price, 0, ",", ".") }}</strong>
+                                    <strong>{{ $order->product->total_format }}</strong>
                                 </li>
                             </ul>
                         </div>

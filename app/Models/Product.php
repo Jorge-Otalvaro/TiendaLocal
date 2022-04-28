@@ -21,6 +21,6 @@ class Product extends Model
     */
     public function getTotalFormatAttribute()
     {
-        return '$'.number_format($this->price, 2, ',', '.');
+        return '$ '.number_format($this->price, 0, ',', '.');
     }
 }

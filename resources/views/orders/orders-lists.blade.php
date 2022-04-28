@@ -25,7 +25,7 @@
                                 <tr>
                                     <th scope="row">{{ $order->id }}</th>
                                     <td>{{ $order->product->name }}</td>
-                                    <td>$ {{ number_format($order->product->price, 0, ",", ".") }}</td>
+                                    <td>{{ $order->product->total_format }}</td>
                                     <td>     
                                         @if($order->status == "CREATED")
                                             <span class="badge badge-pill badge-warning">
@@ -44,7 +44,7 @@
                                     <td>{{ $order->created_at }}</td>
                                     <td>
                                         @if($order->status == "CREATED")
-                                            <a target="_blank" href="{{ route('orders.show', ["order" => $order->id]) }}"  class="badge badge-pill badge-success">
+                                            <a target="_blank" href="{{ route('orders.show', ["order" => $order->id]) }}" class="badge badge-pill badge-success">
                                                 Pendiente de pago
                                             </a>
                                         @elseIf($order->status == "PAYED")
