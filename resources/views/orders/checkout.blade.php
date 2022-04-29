@@ -60,6 +60,47 @@
                             </h4>
                             <form class="needs-validation" novalidate>
 
+                                @if ($order->transactions->count() > 0)                               
+                                    <div class="card">
+                                        <div class="card-header bg-gradient-olive">
+                                            <h3 class="card-title">
+                                                Transacciones
+                                            </h3>                           
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <table id="tbl_transactions" class="table table-striped table-bordered" style="width:100%">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Estado</th>
+                                                                <th>Referencia</th>
+                                                                <th>Creado</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($order->transactions as $transaction)
+                                                                <tr>
+                                                                    <td>
+                                                                        {{$transaction->status}}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{$transaction->reference}}
+                                                                    </td>
+                                                                    <td>
+                                                                        {{$transaction->created_at}}
+                                                                    </td>                                                
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>                                    
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                 @endif  
+                                <hr class="mb-4">
+
                                 @switch($order->status)
                                     @case("CREATED")
                                         @if ($order->transactions->count() == 0 || $order->transactions->first()->current_status != "PENDING")
@@ -79,9 +120,7 @@
                                         <div class="alert alert-danger float-right">
                                             <h5><i class="icon fas fa-ban"></i> Esta orden ya no puede ser pagada.</h5>
                                         </div>
-                                @endswitch
-
-                                <hr class="mb-4">
+                                @endswitch                                
 
                                 @if($order->status == "CREATED" && "REJECTED")
 

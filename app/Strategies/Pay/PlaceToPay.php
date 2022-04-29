@@ -182,14 +182,14 @@ class PlaceToPay implements Strategy
             $response = $this->placeToPay->query($transaction->requestId);
             // $status = $this->getStatus($response);
             $status = $response->status()->status();
-            
+
             if (!$status) {
                 throw new \Exception('El estado recibido no se identifica.');
             }
 
             if ($transaction->getAttributeValue('status') != $status) {
 
-                if (! $transaction->edit(
+                if (!$transaction->edit(
                     [
                         'status' => $status,
                     ]
@@ -197,7 +197,7 @@ class PlaceToPay implements Strategy
                     throw new \Exception('Se genero un error al actualizar la transaccion.');
                 }
                 
-                if (! $transaction->attachStates(
+                if (!$transaction->attachStates(
                     [
                         [
                             'status' => $status,
@@ -225,6 +225,7 @@ class PlaceToPay implements Strategy
                     "message" => $response->status()->message(),
                 ]
             ];
+
         } catch (\Exception $e) {
             \Log::info($e->getMessage());
             return (Object) [
