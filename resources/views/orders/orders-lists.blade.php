@@ -47,11 +47,10 @@
                                             <a target="_blank" href="{{ route('orders.show', ["order" => $order->id]) }}" class="badge badge-pill badge-success">
                                                 Pendiente de pago
                                             </a>
-                                        @elseIf($order->status == "PAYED")
-                                            <a href="/" class="badge badge-pill badge-warning">
-                                                Despachar
-                                            </a>
-                                        @else                                             
+                                        @else    
+                                            <a href="{{ route('orders.show', ["order" => $order->id]) }}" class="badge badge-pill badge-warning">
+                                                Ver detalle de la orden
+                                            </a>                                         
                                         @endif  
                                     </td>                                    
                                 </tr>

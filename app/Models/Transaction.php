@@ -110,10 +110,9 @@ class Transaction extends Model
      */
     public function updateOrder($data)
     {
-        try {           
+        try {
             return $this->order->fill($data)->save();
-
-        } catch (\Illuminate\Database\QueryException $exception) {            
+        } catch (\Illuminate\Database\QueryException $exception) {
             return false;
         }
     }

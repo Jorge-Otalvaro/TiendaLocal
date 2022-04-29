@@ -1,64 +1,104 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
+# Implementacion de una tienda con método de pago pasarela PlaceToPay.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+_Es una tienda muy básica, donde un cliente puede comprar un solo producto con un valor fijo, el cliente necesita únicamente proporcionar su nombre, dirección de correo electrónico y su número de celular para efectuar la compra. Una vez un cliente procede a la compra de su producto, como es debido, el sistema debe saber que se creó una nueva orden de pedido, asignarle su código único para identificarla y saber si esta se encuentra pendiente de pago o si ya se ha realizado un pago para poder “despacharla”._
 
-## About Laravel
+### Pre-requisitos 📋
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+_Ambiente requerido_
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Php 8.0.2 habilitado para la ejecución de comando.
+- Mysql 5.7.19.
+- Composer 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Instalación 🔧
 
-## Learning Laravel
+1. Clonar el repositorio en el folder del servidor web en uso o en el de su elección, **este folder debe tener permisos para que php se pueda ejecutar por CLI y permisos de lectura y escritura para el archivo .env**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+```sh 
+git clone https://github.com/Jorge-Otalvaro/TiendaLocal.git
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+2. Instalar paquetes ejecutando en la raíz del folder.
 
-## Laravel Sponsors
+```sh 
+composer install
+```
+3. Crear BD con COLLATE 'utf8mb4_general_ci', ejemplo.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```sh 
+`CREATE DATABASE evertec COLLATE 'utf8mb4_general_ci';`
+```
 
-### Premium Partners
+4. Duplique el archivo `.env.example` incluido en uno de nombre `.env` y dentro de este ingrese los valores de las variables de entorno necesarias, las básicas serían las siguientes:
+- `DB_HOST="value"` Variable de entorno para el host de BD.
+- `DB_PORT="value"` Variable de entorno para el puerto de BD.
+- `DB_DATABASE="value"` Variable de entorno para el nombre de BD.
+- `DB_USERNAME="value"` Variable de entorno para el usuario de BD.
+- `DB_PASSWORD="value"` Variable de entorno para la contraseña de BD.
+- `PLACE_TO_PAY_LOGIN="value"` Variable de entorno para el id del login de la cuenta Place To Pay.
+- `PLACE_TO_TRAN_KEY="value"` Variable de entorno para el TranKey de la cuenta Place To Pay.
+- `PLACE_TO_TRAN_URL="value"` Variable de entorno para la URL de la cuenta Place To Pay.
+- `PRODUCT_PRICE="value"` Variable de entorno para el precio del producto. Entero valido.
+- `PRODUCT_NAME="value"` Variable de entorno para el nombre del producto.
+- `EXPIRED_MINUTES_PTP="value"` Variable de entorno que especifica la cantidad de minutos para expirar la transacción. Entero valido.
+- `MINUTES_VERIFY_PAY="value"` Variable de entorno que especifica cada cuantos minutos se ejecuta la validación de estado de los pagos, no debe sobrepasar los 60.
+- `EXPIRED_DAYS_ORDER="value"` Variable de entorno que especifica la cantidad de días para expirar la orden. Entero valido.
+- `TIME_EXPIRED_ORDERS="value"` Variable de entorno que especifica la hora del día en la que se ejecuta la expiración de ordenes debe estar en formato de hora y minutos ejemplo a las 7 de la noche seria 19:00, y a las 7 de la mañana seria 07:00 .
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+##### Notas:
+```sh 
+El sistema envía notificaciones por correo, si desea enviarlas configure las variables para este envío. De lo contrario mantenga la configuración de almacenamiento en log por defecto marcada en el archivo `.env.example`, para ver los correos en el log revise el archivo ubicado en `storage/logs/laravel.log`.
+```
+```sh 
+Si cambia las variables de entorno referentes al acceso a gateway de pago es recomendable reiniciar el servidor para que retome las variables dentro de los proveedores de servicios.
+```
+5. En la raíz del sitio ejecutar.
+- `php artisan key:generate && php artisan config:cache && php artisan config:clear` Genera la llave para el cifrado de proyecto y refresca las configuraciones.
+- `php artisan migrate` Crea la estructura de BD. 
+- `php artisan db:seed` Carga los datos de ejemplo, en este caso el árbol inicial enviado en la prueba.
+- `php artisan storage:link` Genera el link simbólico entre "public/storage" y "storage/app/public".
+- `php artisan permission:cache-reset` Limpia la cache de los permisos.
+- `php artisan serve` Arranca el servidor web bajo la url [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-## Contributing
+##### Nota: 
+Si desea puede ejecutar todos los comandos anteriores juntos si ejecuta 
+```sh
+php artisan key:generate && php artisan config:cache && php artisan config:clear && php artisan migrate && php artisan db:seed && php artisan storage:link && php artisan serve
+```
+6. En la raíz del sitio usar este comando si se desea ejecutar las pruebas.
+```sh 
+vendor/bin/phpunit
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+7. Agregar la siguiente entrada Cron a tu servidor, cambiando `path-to-your-project` por la ruta al proyecto.
+```sh 
+* * * * * php /path-to-your-project/artisan schedule:run >> /dev/null 2>&1
+```
 
-## Code of Conduct
+8. Accede al sitio usando la url [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Descripción general de las URL's ⚙️
 
-## Security Vulnerabilities
+Método|URL|Descripción
+ ------ | ------ | ------ 
+ GET|/|Url de inicio del sitio.
+GET|login|Formulario de ingreso.
+POST|login|Autentica.
+POST|logout|Logout.
+GET|notification/unread/__{id}__|Marca una notificación como leida.
+GET|orders|Vista con el listado de ordenes y acciones disponibles.
+POST|orders|Crea una orden.
+GET|orders/__{order}__|Vista con el detalle de la compañía.
+GET|orders/__{order}__/pay|Crea una transacción para pago.
+GET|register|Formulario de registro.
+POST|register|Registra usuario.
+GET|transactions/receive/__{gateway}__/__{uuid}__|Recibe una notificación de cambio de estado en transacción.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+##### Nota: 
+- El parámetro __{id}__ Id de la notificación, debe ser numérico.
+- El parámetro __{order}__ Id de la orden, debe ser numérico.
+- El parámetro __{gateway}__ Nombre de la plataforma de pago.
+- El parámetro __{uuid}__ UUID de la transacción.
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+##### Nota: 
+Todos los usuarios que se registren solo pueden interactuar con sus ordenes.
