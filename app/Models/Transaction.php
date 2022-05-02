@@ -111,7 +111,19 @@ class Transaction extends Model
     public function updateOrder($data)
     {
         try {
+
+            if ($data['status'] == "APPROVED") {
+                $data = ['status' => 'PAYED'];
+                return $this->order->fill($data)->save();
+            }
+
+            if ($data['status'] == "PENDING") {
+                $data = ['status' => 'CREATED'];
+                return $this->order->fill($data)->save();
+            }
+            
             return $this->order->fill($data)->save();
+
         } catch (\Illuminate\Database\QueryException $exception) {
             return false;
         }

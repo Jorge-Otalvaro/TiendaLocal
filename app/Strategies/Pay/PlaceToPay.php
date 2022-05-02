@@ -41,7 +41,7 @@ class PlaceToPay implements Strategy
         $this->placeToPay = $placeToPay;
         $this->transaction = $transaction;
     }
-
+  
     /**
      * Crea la transaccion en placetopay.
      *
@@ -159,13 +159,10 @@ class PlaceToPay implements Strategy
                 )) {
                     throw new \Exception('Se genero un error al almacenar el estado de la transaccion.');
                 }
-                
-                if (! $transaction->updateOrder(
-                    [
-                        'status' => $status,
-                        // 'status' => $this->getOrderStatus($response),
-                    ]
-                )) {
+
+                if (! $transaction->updateOrder(['status' => $status,
+                    // 'status' => $this->getOrderStatus($response)
+                ])) {
                     throw new \Exception('Se genero un error al actualizar el estado de la orden.');
                 }
             }
@@ -192,8 +189,7 @@ class PlaceToPay implements Strategy
                 'exception' => $e,
             ];
         }
-    }
-    
+    }   
 
     /**
      * Obtiene el arreglo para crear la transaccion en la pasarela.
