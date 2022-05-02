@@ -40,54 +40,6 @@ class PlaceToPay implements Strategy
     {
         $this->placeToPay = $placeToPay;
         $this->transaction = $transaction;
-        // $this->mapStatus();
-    }
-
-    /**
-     * Crea el arreglo para hacer la conversion de los estados recibidos con los permitidos.
-     *
-     * @return void
-     */
-    private function mapStatus()
-    {   
-        $statusMap = &$this->statusMap;
-
-        $statusOrderMap = &$this->statusOrderMap;
-
-        array_map(function ($state) use (&$statusMap, &$statusOrderMap) {
-
-            switch ($state) {
-                case 'APPROVED':
-                    $statusMap[$state] = "PAYED";
-                    $statusOrderMap[$state] = "PAYED";
-                    break;
-
-                case 'ERROR':
-                case 'FAILED':
-
-                case 'REJECTED':
-                    $statusMap[$state] = "REJECTED";
-                    $statusOrderMap[$state] = "CREATED";
-                    break;
-
-                case 'REFUNDED':
-                    $statusMap[$state] = "REFUNDED";
-                    $statusOrderMap[$state] = "CREATED";
-                    break;
-
-                case 'PENDING_VALIDATION':
-
-                case 'PENDING':
-                    $statusMap[$state] = "PENDING";
-                    $statusOrderMap[$state] = "CREATED";
-                    break;
-
-                default:
-                    $statusMap[$state] = "CREATED";
-                    $statusOrderMap[$state] = "CREATED";
-                    break;
-            }
-        },Status::validStatus());
     }
 
     /**
@@ -241,36 +193,7 @@ class PlaceToPay implements Strategy
             ];
         }
     }
-
-    /**
-     * Obtiene la conversion del estado de la respuesta recibida de place to pay.
-     *
-     * @param  RedirectInformation $response  Modelo de orden.
-     * @return bool|string false indicando que el estado es desconocido o el texto del estado.
-     */
-    private function getStatus($response): String
-    {
-        if (!isset($this->statusMap[$response->status()->status()])) {
-            return false;
-        }
-
-        return $this->statusMap[$response->status()->status()];
-    }
     
-    /**
-     * Obtiene la conversion del estado de la respuesta recibida de place to pay a los de las ordenes.
-     *
-     * @param  RedirectInformation $response  Modelo de orden.
-     * @return bool|string false indicando que el estado es desconocido o el texto del estado.
-     */
-    private function getOrderStatus($response): String
-    {
-        if (!isset($this->statusOrderMap[$response->status()->status()])) {
-            return false;
-        }
-        
-        return $this->statusOrderMap[$response->status()->status()];
-    }
 
     /**
      * Obtiene el arreglo para crear la transaccion en la pasarela.
