@@ -2,6 +2,8 @@
 
 _Es una tienda muy básica, donde un cliente puede comprar un solo producto con un valor fijo, el cliente necesita únicamente proporcionar su nombre, dirección de correo electrónico y su número de celular para efectuar la compra. Una vez un cliente procede a la compra de su producto, como es debido, el sistema debe saber que se creó una nueva orden de pedido, asignarle su código único para identificarla y saber si esta se encuentra pendiente de pago o si ya se ha realizado un pago para poder “despacharla”._
 
+_Accede al sitio usando la url [http://evertectest.herokuapp.com/](http://evertectest.herokuapp.com/)._
+
 ### Pre-requisitos 📋
 
 _Ambiente requerido_
